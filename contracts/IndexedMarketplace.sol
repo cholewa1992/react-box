@@ -1,11 +1,11 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.15;
 import "./StandardMarketplace.sol";
 
 contract IndexedMarketplace is StandardMarketplace {
 
     address[] private indexes;
 
-    function IndexedMarketplace(Token _token) StandardMarketplace(_token) {
+    function IndexedMarketplace(Token _token) StandardMarketplace(_token) public {
 
     }
 
@@ -45,9 +45,9 @@ contract IndexedMarketplace is StandardMarketplace {
         }
     }
 
-    function getNumberOfItemsOffered() constant returns(uint){
+    function getNumberOfItemsOffered() constant public returns(uint){
 
-        var size = 0;
+        uint size = 0;
 
         for(uint i = 0; i < indexes.length; i++){
             if(indexes[i] != address(0x0)){
@@ -58,9 +58,9 @@ contract IndexedMarketplace is StandardMarketplace {
         return size;
     }
 
-    function getItemsOfferedTo(address _addr) constant returns(address[]){
+    function getItemsOfferedTo(address _addr) constant public returns(address[]){
 
-        var index = 0;
+        uint index = 0;
         address[] memory items = new address[](2);
         for(uint i = 0; i < indexes.length; i++){
             if(offers[indexes[i]].buyer == _addr){

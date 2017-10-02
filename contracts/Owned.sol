@@ -1,17 +1,19 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.15;
 contract Owned {
 
     address public owner;
 
-    function Owned() {
+    function Owned() public {
         owner = msg.sender;
     }
 
     modifier isOwner {
-        if (msg.sender == owner) _; else throw;
+        require(msg.sender == owner);
+        _;
     }
 
-    function transferOwnership(address _newOwner) isOwner {
+    function transferOwnership(address _newOwner) public isOwner {
         owner = _newOwner;
     }
+
 }

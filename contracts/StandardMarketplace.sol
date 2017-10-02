@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.15;
 import "./Marketplace.sol";
 contract StandardMarketplace is Marketplace {
 
@@ -11,20 +11,20 @@ contract StandardMarketplace is Marketplace {
     mapping(address => mapping(address => uint)) private balance; //Tradeable => Buyer => Balance
 
     /* Modifiers */
-    modifier isBuyerOf(Tradeable _item) { if(offers[_item].buyer == msg.sender) _; else throw; }
-    modifier isOwnerOf(Tradeable _item) { if(msg.sender == _item.owner()) _; else throw; }
-    modifier isAuthorizedToSell(Tradeable _item) { if(_item.isAuthorizedToSell(this)) _; else throw; }
+    modifier isBuyerOf(Tradeable _item) { require(offers[_item].buyer == msg.sender); _; }
+    modifier isOwnerOf(Tradeable _item) { require(msg.sender == _item.owner()); _; }
+    modifier isAuthorizedToSell(Tradeable _item) { require(_item.isAuthorizedToSell(this)); _; }
 
-    function StandardMarketplace(Token _token) {
+    function StandardMarketplace(Token _token) public {
         token = _token;
-        if(token.totalSupply() <= 0) throw; //This seams to be an invalid contract
-        if(token.balanceOf(this) != 0) throw;
+        require(token.totalSupply() > 0); //This seams to be an invalid contract
+        require(token.balanceOf(this) == 0);
     }
 
     function extendOffer(Tradeable _item, address _buyer, uint _price)
     isOwnerOf(_item)
     isAuthorizedToSell(_item)
-    returns (bool success) {
+    public returns (bool success) {
         if(offers[_item].state != OfferStates.Initial) return false;
         if(_price < 0) return false;
         addOffer(_item, Offer({
@@ -37,7 +37,7 @@ contract StandardMarketplace is Marketplace {
         return true;
     }
 
-    function acceptOffer(Tradeable _item) isBuyerOf(_item) returns (bool success) {
+    function acceptOffer(Tradeable _item) isBuyerOf(_item) public returns (bool success) {
         var offer = offers[_item];
 
         /* Offer can only be accepted once */
@@ -48,7 +48,7 @@ contract StandardMarketplace is Marketplace {
             if(token.allowance(offer.buyer, this) < offer.amount) return false;
 
             /* Transfer funds from the buyer to the market */
-            if(!token.transferFrom(offer.buyer, this, offer.amount)) throw;
+            require(token.transferFrom(offer.buyer, this, offer.amount));
             balance[_item][offer.buyer] = offer.amount;
         }
 
@@ -59,7 +59,7 @@ contract StandardMarketplace is Marketplace {
         return true;
     }
 
-    function revokeOffer(Tradeable _item) isOwnerOf(_item) returns (bool success) {
+    function revokeOffer(Tradeable _item) isOwnerOf(_item) public returns (bool success) {
         var offer = offers[_item];
 
         /* If the offer is not added then the state is initial */
@@ -69,7 +69,7 @@ contract StandardMarketplace is Marketplace {
         if(offer.state == OfferStates.Accepted && amount > 0) {
             /* transferring all locked funds back to the buyer */
             balance[_item][offer.buyer] = 0;
-            if(!token.transfer(offer.buyer, amount)) throw;
+            require(token.transfer(offer.buyer, amount));
         }
 
         /* Revoke offer */
@@ -80,7 +80,7 @@ contract StandardMarketplace is Marketplace {
     }
 
     function completeTransaction(Tradeable _item) isBuyerOf(_item)
-    returns (bool success) {
+    public returns (bool success) {
 
         /* Getting the offer */
         var offer = offers[_item];
@@ -94,7 +94,7 @@ contract StandardMarketplace is Marketplace {
 
             /* Transferring funds to the seller */
             balance[_item][offer.buyer] -= offer.amount;
-            if(!token.transfer(offer.seller, offer.amount)) throw;
+            require(token.transfer(offer.seller, offer.amount));
         }
 
         /* Transferring ownership to the buyer */
@@ -106,7 +106,7 @@ contract StandardMarketplace is Marketplace {
     }
 
     function abortTransaction(Tradeable _item) isBuyerOf(_item)
-    returns (bool success) {
+    public returns (bool success) {
 
         /* Getting the offer */
         var offer = offers[_item];
@@ -118,7 +118,7 @@ contract StandardMarketplace is Marketplace {
         var amount = balance[_item][offer.buyer];
         if(amount > 0){
             balance[_item][offer.buyer] = 0;
-            if(!token.transfer(offer.buyer, amount)) throw;
+            require(token.transfer(offer.buyer, amount));
         }
 
         /* Cancel sale of the item */
@@ -150,6 +150,6 @@ contract StandardMarketplace is Marketplace {
     }
 
     /* Ether can't be transferred to this account */
-    function () { throw; }
+    function () public { require(false); }
 }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.15;
 import "./Vehicle.sol";
 import "./IndexedMarketplace.sol";
 
@@ -11,13 +11,12 @@ contract DMR is IndexedMarketplace {
     mapping(string => address) private index;
     mapping(uint => address) private licensePlates;
 
-    function DMR(Token _token) IndexedMarketplace(_token) { }
+    function DMR(Token _token) IndexedMarketplace(_token) public { }
 
-    function issueVehicle(string _vin, string _brand, string _model, string _year, string _color) returns(address) {
+    function issueVehicle(string _vin, string _brand, string _model, string _year, string _color) public returns(address) {
 
         /* Check of the plate number is already in use */
-        if(index[_vin] != address(0x0))
-            throw;
+        require(index[_vin] == address(0x0));
 
         /* Creating the new vehicle */
         var vehicle = new Vehicle(_vin, _brand, _model, _year, _color);
@@ -37,23 +36,23 @@ contract DMR is IndexedMarketplace {
     }
 
     /* Search for registered vehicles */
-    function lookup(uint _plate) constant returns(address){
+    function lookup(uint _plate) constant public returns(address){
         return licensePlates[_plate];
     }
 
-    function isVinRegistered(string _vin) constant returns(bool) {
+    function isVinRegistered(string _vin) constant public returns(bool) {
         return index[_vin] != address(0x0);
     }
 
     /* Get a complete list of all vehicles */
-    function getVehicles() constant returns(address[]){
+    function getVehicles() constant public returns(address[]){
         return vehicles;
     }
 
     /* Maybe it is more efficient to return all data and then filtering it? */
-    function getVehiclesOwnedBy(address _addr) constant returns(address[]){
+    function getVehiclesOwnedBy(address _addr) constant public returns(address[]){
 
-        var index = 0;
+        uint index = 0;
         address[] memory cars = new address[](2);
         for(uint i = 0; i < vehicles.length; i++){
             if(Vehicle(vehicles[i]).owner() == _addr){

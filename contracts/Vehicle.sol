@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.15;
 import "./Tradeable.sol";
 
 contract Vehicle is Tradeable {
@@ -10,7 +10,7 @@ contract Vehicle is Tradeable {
     string public year;
     string public color;
 
-    function Vehicle(string _vin, string _brand, string _model, string _year, string _color) {
+    function Vehicle(string _vin, string _brand, string _model, string _year, string _color) public {
         issuer = msg.sender;
         vin = _vin;
         brand = _brand;
