@@ -1,5 +1,5 @@
 /**
- * @file: 2_deploy_contracts.js
+ * @file: migrations/2_deploy_contracts.js
  * @author: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  * Date: 02.10.2017
  * Last Modified Date: 02.10.2017
@@ -16,4 +16,5 @@ module.exports = function(deployer) {
 
     deployer.deploy(HumanStandardToken, 1000000, "Danske Kroner", 0, "DKK").then(function() {
         return deployer.deploy(DMR, HumanStandardToken.address);
+    });
 };
