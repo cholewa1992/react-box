@@ -1,5 +1,5 @@
 /**
- * @file: utils/contracts.js
+ * @file: contracts.js
  * @author: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  * Date: 02.10.2017
  * Last Modified Date: 02.10.2017
@@ -11,7 +11,7 @@ import getWeb3 from './getWeb3'
 import Web3 from 'web3'
 
 
-let utils = {
+let contractUtils = {
 
     initiateContract: function(json){
         return new Promise(function(resolve,reject){
@@ -65,4 +65,4 @@ let utils = {
 
 }
 
-export default utils
+export default contractUtils 
