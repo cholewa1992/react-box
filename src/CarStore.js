@@ -2,7 +2,7 @@
  * @file: CarStore.js
  * @author: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  * Date: 02.10.2017
- * Last Modified Date: 02.10.2017
+ * Last Modified Date: 04.10.2017
  * Last Modified By: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  */
 
@@ -130,12 +130,21 @@ export class DMR {
     }
 }
 
+let vehicles = {}
+
 export class Vehicle {
 
     constructor(address){
 
+        if(vehicles[address] != null) return vehicles[address];
+
+        console.log("Making new vehicle");
+
         this.address = address
         this.fetch()
+        this.subscribers = {};
+
+        vehicles[address] = this;
 
     }
 
@@ -155,7 +164,7 @@ export class Vehicle {
                 instance.model.call().then(v => this.model = v),
                 instance.year.call().then(v => this.year = v),
                 instance.color.call().then(v => this.color = v)
-            ])
+            ]).then(() => this.notify())
         );
 
         getDeployed(DMRContract).then(instance => instance.offers.call(this.address))
@@ -163,9 +172,8 @@ export class Vehicle {
                 this.buyer = offer[1]
                 this.amount = offer[2].toNumber()
                 this.state = resolveState(offer[3].toNumber())
-            })
+            }).then(() => this.notify())
     }
-
 
     isMarketAuthorized(){
         return Promise.all([
@@ -180,6 +188,21 @@ export class Vehicle {
             getAddress(DMRContract),
             getAccount()
         ]).then(r => r[0].authorizeSeller(r[1], { from: r[2] } ))
+    }
+
+
+    subscribe(caller, callback){ this.subscribers[caller] = callback; }
+    unsubscribe(caller){ this.subscribers.remove(caller); }
+    notify() { for(var key in this.subscribers){ this.subscribers[key](this) } }
+
+    equals(vehicle){
+
+        if(vehicle == null) return false;
+        if(vehicle.vin != this.vin) return false;
+        if(vehicle.buyer != this.buyer) return false;
+        if(vehicle.amount != this.amount) return false;
+        if(vehicle.state != this.state) return false;
+        return true;
     }
 
 }

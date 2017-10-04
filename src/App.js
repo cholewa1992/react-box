@@ -2,13 +2,14 @@
  * @file: App.js
  * @author: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  * Date: 02.10.2017
- * Last Modified Date: 02.10.2017
+ * Last Modified Date: 04.10.2017
  * Last Modified By: Jacob Benjamin Cholewa <jacob@cholewa.dk>
  */
 import React, { Component } from 'react'
 import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
 import getWeb3 from './utils/getWeb3'
 import { Token, DMR, Vehicle } from './CarStore'
+import VehicleComponent from './Vehicle'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -44,19 +45,14 @@ class App extends Component {
   }
 
   instantiateContract() {
-
-    new Token().balance().then(amount => console.log(amount))
+    //new Token().balance().then(amount => console.log(amount))
     //new Token().setAllowance(2000);
-    new Token().checkAllowance().then(amount => console.log(amount))
+    //new Token().checkAllowance().then(amount => console.log(amount))
     //new DMR().issueVehicle("5TETU22N28Z493603", "Audi", "R8", "2017", "Carbon");
     new DMR().getOwnVehicles().then(r => {
-   
-        r.forEach(addr => console.log(new Vehicle(addr)))
-
-        
-          
+        r.forEach(addr => this.setState({vehicle: addr}))
+        console.log("got cars");
     });
-
 
     const contract = require('truffle-contract')
     const simpleStorage = contract(SimpleStorageContract)
@@ -71,7 +67,7 @@ class App extends Component {
         simpleStorageInstance = instance
 
         // Stores a given value, 5 by default.
-        //return simpleStorageInstance.set(10, {from: accounts[0]})
+        return simpleStorageInstance.set(10, {from: accounts[0]})
       }).then((result) => {
         // Get the value from the contract to prove it worked.
         return simpleStorageInstance.get.call(accounts[0])
@@ -98,6 +94,8 @@ class App extends Component {
               <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
               <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
               <p>The stored value is: {this.state.storageValue}</p>
+                <VehicleComponent value={this.state.vehicle} />
+                <VehicleComponent value={this.state.vehicle} />
             </div>
           </div>
         </main>
